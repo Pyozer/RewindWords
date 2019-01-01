@@ -13,8 +13,8 @@ dependencies:
   audio_recorder:
     git: git://github.com/mmcc007/audio_recorder.git
   audioplayers: ^0.7.8
-  ffmpeg:
-    path: ../ffmpeg
+  reverse_audio:
+    path: ../reverse_audio
 
 dev_dependencies:
   flutter_test:

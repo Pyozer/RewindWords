@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:audio_recorder/audio_recorder.dart';
-import 'package:ffmpeg/ffmpeg.dart';
+import 'package:reverse_audio/reverse_audio.dart';
 
 enum Status { WAITING, RECORDING, PLAYING, REVERSING, REVERSE_PLAYING }
 
@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _reverseSound() async {
     _updateStatus(Status.REVERSING);
     await _deleteFile(RFILE);
-    print(await Ffmpeg.execute("ffmpeg -i $FILE -af areverse $RFILE -y"));
+    print(await ReverseAudio.reverseFile(FILE, RFILE));
     _updateStatus(Status.WAITING);
   }
 
