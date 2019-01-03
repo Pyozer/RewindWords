@@ -42,10 +42,6 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This sample uses the microphone to record your speech.</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>audio</string>
-	</array>
+	<string>Record audio for playback</string>
 </dict>
 </plist>

@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:reverse_audio/reverse_audio.dart';
+import 'package:path_provider/path_provider.dart';
 
 enum Status { WAITING, RECORDING, PLAYING, REVERSING, REVERSE_PLAYING }
 
-const FILE = '/storage/emulated/0/default.m4a';
-const RFILE = '/storage/emulated/0/default_reverse.m4a';
+const FILE_NAME = "rewindWordsRecord.m4a";
+const FILE_NAME_R = "rewindWordsRecordReversed.m4a";
 
 class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
@@ -17,15 +18,25 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Status _status = Status.WAITING;
 
-  AudioPlayer _audioPlayer;
-  Duration _currentPosition = new Duration(milliseconds: 0);
+  String _recordFilePath;
+  String _recordReversedFilePath;
 
-  Recording _recording = new Recording();
+  AudioPlayer _audioPlayer;
+  Duration _currentPosition = Duration(milliseconds: 0);
+
+  Recording _recording = Recording();
+
   bool _isRecording = false;
 
   void initState() {
     super.initState();
-    _audioPlayer = new AudioPlayer();
+    _initAudioPlayer();
+    _updateFilesPath();
+  }
+
+  void _initAudioPlayer() {
+    if (_audioPlayer != null) _audioPlayer.release();
+    _audioPlayer = AudioPlayer();
     _audioPlayer.setReleaseMode(ReleaseMode.LOOP);
     _audioPlayer.positionHandler = (Duration d) {
       setState(() => _currentPosition = d);
@@ -36,6 +47,12 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _status = status);
   }
 
+  Future<void> _updateFilesPath() async {
+    Directory tempDir = await getTemporaryDirectory();
+    _recordFilePath = tempDir.path + '/' + FILE_NAME;
+    _recordReversedFilePath = tempDir.path + '/' + FILE_NAME_R;
+  }
+
   Future<void> _deleteFile(String path) async {
     File file = File(path);
     if (await file.exists()) await file.delete();
@@ -44,15 +61,14 @@ class _HomeScreenState extends State<HomeScreen> {
   _startRecord() async {
     try {
       if (await AudioRecorder.hasPermissions) {
-        await _deleteFile(FILE);
+        await _updateFilesPath();
+        await _deleteFile(_recordFilePath);
+        await _deleteFile(_recordReversedFilePath);
 
-        await AudioRecorder.start(path: FILE);
+        await AudioRecorder.start(path: _recordFilePath);
 
         bool isRecording = await AudioRecorder.isRecording;
-        setState(() {
-          _recording = Recording(duration: Duration(), path: "");
-          _isRecording = isRecording;
-        });
+        setState(() => _isRecording = isRecording);
       } else {
         print("You must accept permissions");
       }
@@ -62,6 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   _stopRecord() async {
+    //if (await AudioRecorder.isRecording) {
     var recording = await AudioRecorder.stop();
     print("Stop recording: ${recording.path}");
     bool isRecording = await AudioRecorder.isRecording;
@@ -73,24 +90,33 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     _reverseSound();
+    //}
   }
 
   void _reverseSound() async {
-    _updateStatus(Status.REVERSING);
-    await _deleteFile(RFILE);
-    print(await ReverseAudio.reverseFile(FILE, RFILE));
-    _updateStatus(Status.WAITING);
+    try {
+      _updateStatus(Status.REVERSING);
+      await _deleteFile(_recordReversedFilePath);
+      await ReverseAudio.reverseFile(
+        _recordFilePath,
+        _recordReversedFilePath,
+      );
+      _updateStatus(Status.WAITING);
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> _startPlayer() async {
-    await _stopPlayer();
     _updateStatus(Status.PLAYING);
-    await _audioPlayer.play(RFILE, isLocal: true);
+    print(_recordReversedFilePath);
+    await _audioPlayer.play(_recordReversedFilePath, isLocal: true);
   }
 
   Future<void> _stopPlayer() async {
-    _updateStatus(Status.WAITING);
     await _audioPlayer.release();
+    _updateStatus(Status.WAITING);
+    _initAudioPlayer();
   }
 
   @override
@@ -109,11 +135,11 @@ class _HomeScreenState extends State<HomeScreen> {
             Text((_currentPosition.inMilliseconds / 1000).toStringAsFixed(1) +
                 "sec"),
             RaisedButton(
-              onPressed: _startRecord,
+              onPressed: !_isRecording ? _startRecord : null,
               child: Text("Enregistrer"),
             ),
             RaisedButton(
-              onPressed: _stopRecord,
+              onPressed: _isRecording ? _stopRecord : null,
               child: Text("Terminer"),
             ),
             RaisedButton(
