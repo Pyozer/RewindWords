@@ -14,8 +14,7 @@ dependencies:
     git: git://github.com/mmcc007/audio_recorder.git
   audioplayers: ^0.7.8
   reverse_audio:
-    path: ../reverse_audio
-  
+    path: ../reverse_audio/
   path_provider: ^0.4.1
 
 dev_dependencies:

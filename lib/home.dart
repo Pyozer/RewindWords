@@ -48,7 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _updateFilesPath() async {
-    Directory tempDir = await getTemporaryDirectory();
+    Directory tempDir = Platform.isIOS
+        ? await getTemporaryDirectory()
+        : Directory("/storage/emulated/0");
     _recordFilePath = tempDir.path + '/' + FILE_NAME;
     _recordReversedFilePath = tempDir.path + '/' + FILE_NAME_R;
   }
@@ -97,10 +99,11 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       _updateStatus(Status.REVERSING);
       await _deleteFile(_recordReversedFilePath);
-      await ReverseAudio.reverseFile(
+      var result = await ReverseAudio.reverseFile(
         _recordFilePath,
         _recordReversedFilePath,
       );
+      print(result);
       _updateStatus(Status.WAITING);
     } catch (e) {
       print(e);
