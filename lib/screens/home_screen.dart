@@ -1,5 +1,13 @@
+import 'package:audio_recorder/audio_recorder.dart';
 import 'package:flutter/material.dart';
+import 'package:rewind_words/screens/play_screen.dart';
+import 'package:rewind_words/utils/file.dart';
+import 'package:rewind_words/utils/permissions.dart';
+import 'package:rewind_words/widgets/divided_view.dart';
 import 'package:simple_permissions/simple_permissions.dart';
+
+const btnSize = 90.0;
+const micIcon = Icon(Icons.mic, size: btnSize / 2, color: Colors.white);
 
 class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
@@ -7,81 +15,109 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  bool _isRecording = false;
 
+  @override
   void initState() {
     super.initState();
     _askPermissions();
   }
 
   void _askPermissions() async {
-    final recordRes =
-        await SimplePermissions.requestPermission(Permission.RecordAudio);
-    final writeRes = await SimplePermissions.requestPermission(
-        Permission.WriteExternalStorage);
+    final isAllOk = await requestPermissions(
+      [Permission.RecordAudio, Permission.WriteExternalStorage],
+    );
 
-    if (recordRes != PermissionStatus.authorized ||
-        writeRes != PermissionStatus.authorized) {
-      _scaffoldKey.currentState?.showSnackBar(SnackBar(
-        content: Text("You must accept permissions !"),
-        action: SnackBarAction(label: "Ask again", onPressed: _askPermissions),
-      ));
+    if (!isAllOk) {
+      _showPermissionAlert();
     }
+  }
+
+  void _showPermissionAlert() {
+    _scaffoldKey.currentState?.showSnackBar(SnackBar(
+      content: Text("You must accept permissions !"),
+      action: SnackBarAction(label: "Ask again", onPressed: _askPermissions),
+    ));
+  }
+
+  void _onBtnPressed() {
+    if (_isRecording)
+      _stopRecord();
+    else
+      _startRecord();
+  }
+
+  void _startRecord() async {
+    try {
+      if (await AudioRecorder.hasPermissions) {
+        final filePath = await getRecordFilePath();
+        await deleteFile(filePath);
+
+        await AudioRecorder.start(path: filePath);
+
+        bool isRecording = await AudioRecorder.isRecording;
+        setState(() => _isRecording = isRecording);
+      } else {
+        _showPermissionAlert();
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void _stopRecord() async {
+    await AudioRecorder.stop();
+    bool isRecording = await AudioRecorder.isRecording;
+    setState(() => _isRecording = isRecording);
+
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => PlayerScreen(playReverse: true)
+    ));
+  }
+
+  Widget _buildStaticBtn() {
+    return Container(
+      width: btnSize,
+      height: btnSize,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white, width: 4.0),
+        borderRadius: BorderRadius.circular(50.0),
+      ),
+      child: micIcon,
+    );
+  }
+
+  Widget _buildListeningBtn() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        const SizedBox(
+          width: btnSize,
+          height: btnSize,
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation(Colors.white),
+          ),
+        ),
+        micIcon
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    const gradient = LinearGradient(
-      colors: [
-        Color.fromARGB(255, 255, 174, 56),
-        Color.fromARGB(255, 255, 76, 99),
-      ],
-      begin: Alignment.topRight,
-      end: Alignment.bottomLeft,
-    );
-
-    final textTheme = Theme.of(context).textTheme;
-    final titleStyle = textTheme.display2
-        .copyWith(color: Colors.white, fontWeight: FontWeight.w700);
-
-    final title = Text(
-      'Rewind Words',
-      style: titleStyle,
-      textAlign: TextAlign.center,
-    );
-
-    final description = Text(
-      'Speak a word, then you will speak this word in reverse after listen it !',
-      style: textTheme.title.copyWith(color: Colors.white),
-      textAlign: TextAlign.center,
-    );
-
-    return Container(
-      padding: const EdgeInsets.all(48.0),
-      decoration: const BoxDecoration(gradient: gradient),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(flex: 1, child: const SizedBox.shrink()),
-          title,
-          const SizedBox(height: 42.0),
-          description,
-          Expanded(
-            flex: 3,
-            child: Center(
-              child: Container(
-                width: 100.0,
-                height: 100.0,
-                child: RawMaterialButton(
-                  fillColor: Colors.purple,
-                  shape: const CircleBorder(),
-                  elevation: 5.0,
-                  child: const Icon(Icons.mic, color: Colors.white, size: 50.0),
-                  onPressed: () {},
-                ),
-              ),
-            ),
+    return DividedView(
+      title: 'Rewind Words',
+      desc:
+          'Speak something, after listen the result in reversed, you will speak it to listen the reverse reversed.',
+      child: Center(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(50.0),
+            onTap: _onBtnPressed,
+            child: _isRecording ? _buildListeningBtn() : _buildStaticBtn(),
           ),
-        ],
+        ),
       ),
     );
   }
