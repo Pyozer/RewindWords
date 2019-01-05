@@ -62,7 +62,7 @@ class _PlayerScreenState extends State<PlayerScreen>
 
   Future<void> _startPlayer() async {
     String path = widget.playReverse
-        ? await getRecordFilePath()
+        ? await getReverseRecordFilePath()
         : await getRecordFilePath();
     await _audioPlayer.play(path, isLocal: true);
   }

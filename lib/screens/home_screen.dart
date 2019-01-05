@@ -1,5 +1,6 @@
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:flutter/material.dart';
+import 'package:reverse_audio/reverse_audio.dart';
 import 'package:rewind_words/screens/play_screen.dart';
 import 'package:rewind_words/utils/file.dart';
 import 'package:rewind_words/utils/permissions.dart';
@@ -70,9 +71,19 @@ class _HomeScreenState extends State<HomeScreen> {
     bool isRecording = await AudioRecorder.isRecording;
     setState(() => _isRecording = isRecording);
 
+    String recordFile = await getRecordFilePath();
+    String reversedFile = await getReverseRecordFilePath();
+
+    await deleteFile(await getReverseRecordFilePath());
+
+    try {
+    await ReverseAudio.reverseFile(recordFile, reversedFile);
+
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => PlayerScreen(playReverse: true)
-    ));
+        builder: (context) => PlayerScreen(playReverse: true)));
+    } catch(e) {
+      _scaffoldKey.currentState?.showSnackBar(SnackBar(content: Text(e)));
+    }
   }
 
   Widget _buildStaticBtn() {
