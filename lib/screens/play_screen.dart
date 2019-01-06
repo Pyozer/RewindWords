@@ -1,4 +1,7 @@
-import 'package:audioplayers/audioplayers.dart';
+import 'dart:async';
+import 'dart:math';
+
+import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter/material.dart';
 import 'package:rewind_words/utils/file.dart';
 import 'package:rewind_words/widgets/divided_view.dart';
@@ -13,89 +16,75 @@ class PlayerScreen extends StatefulWidget {
   _PlayerScreenState createState() => _PlayerScreenState();
 }
 
-class _PlayerScreenState extends State<PlayerScreen>
-    with SingleTickerProviderStateMixin {
-  AnimationController _animController;
-  Tween _tween;
-  Animation _animation;
-  AudioPlayer _audioPlayer;
-  bool _isPlaying = false;
+class _PlayerScreenState extends State<PlayerScreen> {
+  FlutterSound _audioPlayer;
+  StreamSubscription _playerSubscription;
 
-  int realPos = 1;
+  bool _isPlaying = false;
+  double _duration = 1.0;
+  double _currentPos = 1.0;
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(duration: Duration(milliseconds: 10), vsync: this);
-
-    _tween = Tween<double>(begin: 0.0, end: 1.0);
-    _animation = _tween.animate(_animController)
-      ..addListener(() => setState(() {}));
-
-    _initAudioPlayer();
     _startPlayer();
   }
 
   @override
   void dispose() {
-    if (_audioPlayer != null) _audioPlayer.release();
-    _animController.dispose();
+    _disposePlayer();
     super.dispose();
   }
 
-  void _initAudioPlayer() {
-    if (_audioPlayer != null) _audioPlayer.release();
-
-    _audioPlayer = AudioPlayer();
-    _audioPlayer.setReleaseMode(ReleaseMode.STOP);
-    _audioPlayer.durationHandler = (Duration d) {
-      if (_tween.end != d.inMilliseconds.toDouble()) {
-        // If not already setup
-        _animController.duration = d;
-        _tween.begin = 0.0;
-        _tween.end = d.inMilliseconds.toDouble();
-      }
-    };
-    _audioPlayer.positionHandler = (Duration d) {
-      realPos = d.inMilliseconds;
-      if (!_animController.isAnimating || _animation.isDismissed)
-        _animController.forward();
-    };
-    _audioPlayer.completionHandler = () {
-      if (_isPlaying) _startPlayer();
-    };
+  Future<void> _disposePlayer() async {
+    try {
+      if (_playerSubscription != null) _playerSubscription.cancel();
+      if (_audioPlayer != null || _isPlaying) await _audioPlayer.stopPlayer();
+    } catch (e) {
+      print(e);
+    }
+    _audioPlayer = null;
+    _playerSubscription = null;
   }
 
   Future<void> _startPlayer() async {
-    _animController.reset();
+    String path = await getReverseRecordFilePath();
 
-    String path = widget.playReverse
-        ? await getReverseRecordFilePath()
-        : await getRecordFilePath();
+    await _disposePlayer(); // Kill player
 
-    _isPlaying = true; // setState do by animation
-    _animController.forward();
-    await _audioPlayer.play(path, isLocal: true);
-  }
-
-  void _stopPlayer() async {
-    setState(() => _isPlaying = false);
-    await _audioPlayer.pause();
-    _animController.stop();
-    _animController.animateTo(
-      realPos.toDouble() / _tween.end,
-      duration: Duration.zero,
-    );
-  }
-
-  void _resumePlayer() {
+    _audioPlayer = FlutterSound();
+    await _audioPlayer.startPlayer(path);
     _isPlaying = true;
-    _animController.forward();
-    _audioPlayer.resume();
+
+    _playerSubscription = _audioPlayer.onPlayerStateChanged.listen((e) {
+      if (e != null && _isPlaying) {
+        setState(() {
+          _currentPos =
+              min(e.currentPosition, e.duration); // Fix currPos > duration
+          _duration = e.duration;
+        });
+      } else if (_isPlaying) {
+        _startPlayer();
+      }
+    });
+  }
+
+  void _pausePlayer() async {
+    setState(() => _isPlaying = false);
+    await _audioPlayer.pausePlayer();
+  }
+
+  void _resumePlayer() async {
+    try {
+      _isPlaying = true;
+      await _audioPlayer.resumePlayer();
+    } catch (e) {
+      _startPlayer();
+    }
   }
 
   void _onRecordReverse() {
-    _stopPlayer();
+    _pausePlayer();
   }
 
   String _toFixed(double value) => (value / 1000).toStringAsFixed(1);
@@ -103,7 +92,7 @@ class _PlayerScreenState extends State<PlayerScreen>
   @override
   Widget build(BuildContext context) {
     final progressStyle = Theme.of(context).textTheme.title;
-    double value = (_animation.value / _tween.end);
+    double value = (_currentPos / _duration);
 
     return Stack(
       alignment: Alignment.topLeft,
@@ -117,12 +106,12 @@ class _PlayerScreenState extends State<PlayerScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   SimpleIconBtn(
-                    onPressed: _isPlaying ? _stopPlayer : _resumePlayer,
+                    onPressed: _isPlaying ? _pausePlayer : _resumePlayer,
                     icon: _isPlaying ? Icons.pause : Icons.play_arrow,
                     size: 32,
                   ),
                   Text(
-                    _toFixed(_animation.value) + "/" + _toFixed(_tween.end),
+                    _toFixed(_currentPos) + "/" + _toFixed(_duration),
                     style: progressStyle,
                     textAlign: TextAlign.end,
                   ),
@@ -130,11 +119,6 @@ class _PlayerScreenState extends State<PlayerScreen>
               ),
               LinearProgressIndicator(
                 value: value,
-                valueColor: const AlwaysStoppedAnimation(Colors.white),
-                backgroundColor: Colors.black26,
-              ),
-              LinearProgressIndicator(
-                value: realPos / _tween.end,
                 valueColor: const AlwaysStoppedAnimation(Colors.white),
                 backgroundColor: Colors.black26,
               ),

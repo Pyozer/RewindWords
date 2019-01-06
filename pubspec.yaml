@@ -12,7 +12,7 @@ dependencies:
   cupertino_icons: ^0.1.2
   audio_recorder:
     git: git://github.com/mmcc007/audio_recorder
-  audioplayers: ^0.7.8
+  flutter_sound: ^1.2.1
   reverse_audio:
     git: git://github.com/Pyozer/reverse_audio
   path_provider: ^0.4.1
