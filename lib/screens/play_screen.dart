@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'dart:math';
 
-import 'package:flutter_sound/flutter_sound.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:rewind_words/screens/home_screen.dart';
 import 'package:rewind_words/utils/file.dart';
@@ -17,9 +16,7 @@ class PlayerScreen extends StatefulWidget {
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
-  FlutterSound _audioPlayer;
-  StreamSubscription _playerSubscription;
-
+  AudioPlayer _audioPlayer;
   bool _isPlaying = false;
   double _duration = 1.0;
   double _currentPos = 1.0;
@@ -27,6 +24,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   void initState() {
     super.initState();
+    _initPlayer();
     _startPlayer();
   }
 
@@ -36,56 +34,62 @@ class _PlayerScreenState extends State<PlayerScreen> {
     super.dispose();
   }
 
-  Future<void> _disposePlayer() async {
-    try {
-      if (_playerSubscription != null) _playerSubscription.cancel();
-      if (_audioPlayer != null || _isPlaying) await _audioPlayer.stopPlayer();
-    } catch (e) {
-      print(e);
-    }
-    _audioPlayer = null;
-    _playerSubscription = null;
+  void _initPlayer() {
+    _isPlaying = false;
+    _audioPlayer = AudioPlayer();
+    _audioPlayer.setReleaseMode(ReleaseMode.STOP);
+
+    _audioPlayer.durationHandler = (Duration d) {
+      setState(() => _duration = d.inMilliseconds.toDouble());
+    };
+    _audioPlayer.positionHandler = (Duration p) {
+      setState(() => _currentPos = p.inMilliseconds.toDouble());
+    };
+
+    _audioPlayer.completionHandler = () {
+      if (_isPlaying) {
+        setState(() {
+          _isPlaying = false;
+          _currentPos = _duration;
+        });
+        _startPlayer(wait: true);
+      }
+    };
   }
 
-  Future<void> _startPlayer() async {
-    await _disposePlayer(); // Kill player
+  Future<void> _disposePlayer() async {
+    if (_audioPlayer != null) {
+      await _audioPlayer.stop();
+      await _audioPlayer.release();
+      _isPlaying = false;
+      _audioPlayer = null;
+    }
+  }
 
+  Future<void> _startPlayer({wait = false}) async {
     String path = !widget.isInReverse
         ? await getReverseRecordFilePath()
         : await getRReverseRecordFilePath();
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    if (wait) await Future.delayed(const Duration(milliseconds: 400));
+    if (_audioPlayer == null) _initPlayer();
+    if (_isPlaying) await _audioPlayer.stop();
 
-    _audioPlayer = FlutterSound();
-    await _audioPlayer.startPlayer(path);
-    _isPlaying = true;
-
-    _playerSubscription = _audioPlayer.onPlayerStateChanged.listen((e) {
-      if (e != null && _isPlaying) {
-        setState(() {
-          _currentPos =
-              min(e.currentPosition, e.duration); // Fix currPos > duration
-          _duration = e.duration;
-        });
-      } else if (_isPlaying) {
-        _startPlayer();
-      }
-    });
+    final result = await _audioPlayer.play(path, isLocal: true);
+    if (result == 1) setState(() => _isPlaying = true);
   }
 
-  void _pausePlayer() async {
-    setState(() => _isPlaying = false);
-    try {
-      await _audioPlayer.pausePlayer();
-    } catch (e) {
-      print(e);
-    }
+  _pause() async {
+    if (!_isPlaying) return;
+    final result = await _audioPlayer.pause();
+    if (result == 1) setState(() => _isPlaying = false);
   }
 
-  void _resumePlayer() async {
+  _resume() async {
+    if (_isPlaying) return;
     try {
-      _isPlaying = true;
-      await _audioPlayer.resumePlayer();
+      final result = await _audioPlayer.resume();
+      if (result == 1) setState(() => _isPlaying = true);
     } catch (e) {
       _startPlayer();
     }
@@ -96,7 +100,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   Widget build(BuildContext context) {
     final progressStyle = Theme.of(context).textTheme.title;
-    double value = (_currentPos / _duration);
+    double value = _currentPos == 0 ? 0 : (_currentPos / _duration);
 
     return Screen(
       title: "Words reversed",
@@ -107,7 +111,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               SimpleIconBtn(
-                onPressed: _isPlaying ? _pausePlayer : _resumePlayer,
+                onPressed: _isPlaying ? _pause : _resume,
                 icon: _isPlaying ? Icons.pause : Icons.play_arrow,
                 size: 32,
               ),
@@ -129,7 +133,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
               child: RaisedButton(
                 child: Text('Speak in reverse'),
                 onPressed: () {
-                  if (_isPlaying) _pausePlayer();
+                  _disposePlayer();
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (_) => HomeScreen(speakInReverse: true),
                   ));
@@ -139,7 +143,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
           ),
         ],
       ),
-      onBackPressed: () => Navigator.of(context).pop(),
+      onBackPressed: () {
+        _disposePlayer();
+        Navigator.of(context).pop();
+      },
     );
   }
 }
