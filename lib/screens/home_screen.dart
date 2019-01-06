@@ -4,11 +4,15 @@ import 'package:reverse_audio/reverse_audio.dart';
 import 'package:rewind_words/screens/play_screen.dart';
 import 'package:rewind_words/utils/file.dart';
 import 'package:rewind_words/utils/permissions.dart';
-import 'package:rewind_words/widgets/divided_view.dart';
 import 'package:rewind_words/widgets/record_btn.dart';
+import 'package:rewind_words/widgets/screen.dart';
 import 'package:simple_permissions/simple_permissions.dart';
 
 class HomeScreen extends StatefulWidget {
+  final bool speakInReverse;
+
+  const HomeScreen({Key key, this.speakInReverse = false}) : super(key: key);
+
   _HomeScreenState createState() => _HomeScreenState();
 }
 
@@ -19,10 +23,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _askPermissions();
+    _askPermissions().then((isOk) {
+      if (isOk && widget.speakInReverse) _startRecord();
+    });
   }
 
-  void _askPermissions() async {
+  Future<bool> _askPermissions() async {
     final isAllOk = await requestPermissions(
       [Permission.RecordAudio, Permission.WriteExternalStorage],
     );
@@ -30,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!isAllOk) {
       _showPermissionAlert();
     }
+    return isAllOk;
   }
 
   void _showPermissionAlert() {
@@ -70,15 +77,23 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _isRecording = isRecording);
 
     String recordFile = await getRecordFilePath();
-    String reversedFile = await getReverseRecordFilePath();
+    String reversedFile = !widget.speakInReverse
+        ? await getReverseRecordFilePath()
+        : await getRReverseRecordFilePath();
 
-    await deleteFile(await getReverseRecordFilePath());
+    await deleteFile(reversedFile);
 
     try {
       await ReverseAudio.reverseFile(recordFile, reversedFile);
 
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => PlayerScreen(playReverse: true)));
+      final route = MaterialPageRoute(
+        builder: (context) => PlayerScreen(isInReverse: widget.speakInReverse),
+      );
+
+      if (widget.speakInReverse)
+        Navigator.of(context).pushReplacement(route);
+      else
+        Navigator.of(context).push(route);
     } catch (e) {
       _scaffoldKey.currentState?.showSnackBar(SnackBar(content: Text(e)));
     }
@@ -86,16 +101,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DividedView(
-      title: 'Rewind Words',
-      desc:
-          'Speak something, after listen the result in reversed, you will speak it to listen the reverse reversed.',
+    return Screen(
+      title: !widget.speakInReverse ? 'Rewind Words' : 'Speak reverse',
+      desc: !widget.speakInReverse
+          ? 'Speak a word, you will listen it after in reverse.'
+          : 'Speak the word in reverse, you will listen it reverse after.',
       child: Center(
         child: RecordButton(
           isRecording: _isRecording,
           onPressed: _onBtnPressed,
         ),
       ),
+      onBackPressed: widget.speakInReverse
+          ? () {
+              Navigator.of(context).pop();
+            }
+          : null,
     );
   }
 }
