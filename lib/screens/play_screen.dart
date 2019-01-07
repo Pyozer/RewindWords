@@ -67,7 +67,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   Future<void> _startPlayer() async {
     if (!mounted || _audioPlayer == null) return;
-    
+
     String path = !widget.isInReverse
         ? await getReverseRecordFilePath()
         : await getRReverseRecordFilePath();
@@ -110,7 +110,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
     return Screen(
       title: "Words reversed",
-      desc: "Listen your words in reverse and try to say it",
+      desc: !widget.isInReverse
+          ? "Listen to your words in reverse and try to say it."
+          : "Listen to what you said backwards, inverted.",
       child: Column(
         children: [
           Row(
