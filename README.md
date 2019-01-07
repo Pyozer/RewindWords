@@ -29,4 +29,4 @@ The lib 'reverse_audio' is a plugin that I made, who use FFMPEG for Android and 
 
 ## Demo
 
-<img src="https://media.giphy.com/media/1k3VH4oWPjDx85IqmJ/giphy.gif" width="400" alt="Demo of the app"/>
+<img src="demo/demo.gif" width="400" alt="Demo of the app"/>
