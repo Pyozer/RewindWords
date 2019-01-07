@@ -23,9 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _askPermissions().then((isOk) {
-      if (isOk && widget.speakInReverse) _startRecord();
-    });
+    _askPermissions();
   }
 
   @override
