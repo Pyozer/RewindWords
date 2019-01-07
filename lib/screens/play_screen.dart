@@ -43,50 +43,56 @@ class _PlayerScreenState extends State<PlayerScreen> {
       setState(() => _duration = d.inMilliseconds.toDouble());
     };
     _audioPlayer.positionHandler = (Duration p) {
+      if (!_isPlaying) _audioPlayer.release();
       setState(() => _currentPos = p.inMilliseconds.toDouble());
     };
 
-    _audioPlayer.completionHandler = () {
+    _audioPlayer.completionHandler = () async {
       if (_isPlaying) {
-        setState(() {
-          _isPlaying = false;
-          _currentPos = _duration;
-        });
-        _startPlayer(wait: true);
+        setState(() => _currentPos = _duration);
+        await Future.delayed(const Duration(milliseconds: 400));
+        if (_isPlaying) _startPlayer();
       }
     };
   }
 
   Future<void> _disposePlayer() async {
-    if (_audioPlayer != null) {
+    if (_audioPlayer == null) {
       await _audioPlayer.stop();
       await _audioPlayer.release();
-      _isPlaying = false;
       _audioPlayer = null;
     }
+    _isPlaying = false;
   }
 
-  Future<void> _startPlayer({wait = false}) async {
+  Future<void> _startPlayer() async {
+    if (!mounted || _audioPlayer == null) return;
+    
     String path = !widget.isInReverse
         ? await getReverseRecordFilePath()
         : await getRReverseRecordFilePath();
 
-    if (wait) await Future.delayed(const Duration(milliseconds: 400));
-    if (_audioPlayer == null) _initPlayer();
     if (_isPlaying) await _audioPlayer.stop();
 
     final result = await _audioPlayer.play(path, isLocal: true);
     if (result == 1) setState(() => _isPlaying = true);
   }
 
-  _pause() async {
+  void _pause() async {
     if (!_isPlaying) return;
     final result = await _audioPlayer.pause();
     if (result == 1) setState(() => _isPlaying = false);
   }
 
-  _resume() async {
+  void _stop() async {
+    if (!_isPlaying) return;
+    final result = await _audioPlayer.stop();
+    if (result == 1) setState(() => _isPlaying = false);
+  }
+
+  void _resume() async {
     if (_isPlaying) return;
+    if (_audioPlayer == null) _initPlayer();
     try {
       final result = await _audioPlayer.resume();
       if (result == 1) setState(() => _isPlaying = true);
@@ -129,17 +135,19 @@ class _PlayerScreenState extends State<PlayerScreen> {
           ),
           Expanded(
             flex: 1,
-            child: Center(
-              child: RaisedButton(
-                child: Text('Speak in reverse'),
-                onPressed: () {
-                  _disposePlayer();
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => HomeScreen(speakInReverse: true),
-                  ));
-                },
-              ),
-            ),
+            child: !widget.isInReverse
+                ? Center(
+                    child: RaisedButton(
+                      child: Text('Speak in reverse'),
+                      onPressed: () {
+                        _stop();
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => HomeScreen(speakInReverse: true),
+                        ));
+                      },
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
         ],
       ),
