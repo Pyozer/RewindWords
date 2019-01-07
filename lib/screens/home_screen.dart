@@ -28,6 +28,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    _stopRecord();
+    super.dispose();
+  }
+
   Future<bool> _askPermissions() async {
     final isAllOk = await requestPermissions(
       [Permission.RecordAudio, Permission.WriteExternalStorage],
@@ -73,8 +79,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _stopRecord() async {
     await AudioRecorder.stop();
-    bool isRecording = await AudioRecorder.isRecording;
-    setState(() => _isRecording = isRecording);
+    if (!mounted) return;
+    setState(() => _isRecording = false);
 
     String recordFile = await getRecordFilePath();
     String reversedFile = !widget.speakInReverse
