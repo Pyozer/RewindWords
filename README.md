@@ -10,6 +10,7 @@ Actions steps:
 **App:** Reverse what you said
   
 **You:** Listen the result until you are ready
+
 **You:** Speak the word/sentance in reverse
   
 **App:** Reverse what you said in reverse
