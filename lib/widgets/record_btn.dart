@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 const btnSize = 90.0;
 const micIcon = Icon(Icons.mic, size: btnSize / 2, color: Colors.white);
+const recordIcon = Icon(Icons.stop, size: btnSize / 2, color: Colors.red);
 
 class RecordButton extends StatelessWidget {
   final bool isRecording;
@@ -31,10 +32,10 @@ class RecordButton extends StatelessWidget {
           width: btnSize,
           height: btnSize,
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation(Colors.white),
+            valueColor: AlwaysStoppedAnimation(Colors.red),
           ),
         ),
-        micIcon
+        recordIcon
       ],
     );
   }
