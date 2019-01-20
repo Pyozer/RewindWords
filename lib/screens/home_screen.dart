@@ -37,9 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
       [Permission.RecordAudio, Permission.WriteExternalStorage],
     );
 
-    if (!isAllOk) {
-      _showPermissionAlert();
-    }
+    if (!isAllOk) _showPermissionAlert();
     return isAllOk;
   }
 
@@ -99,21 +97,30 @@ class _HomeScreenState extends State<HomeScreen> {
       else
         Navigator.of(context).push(route);
     } catch (e) {
-      _scaffoldKey.currentState?.showSnackBar(SnackBar(content: Text(e)));
+      _scaffoldKey.currentState?.showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Screen(
+      scaffoldKey: _scaffoldKey,
       title: !widget.speakInReverse ? 'Rewind Words' : 'Speak reverse',
       desc: !widget.speakInReverse
           ? 'Speak a word, you will listen it after in reverse.'
           : 'Speak the word in reverse, you will listen it reverse after.',
       child: Center(
-        child: RecordButton(
-          isRecording: _isRecording,
-          onPressed: _onBtnPressed,
+        child: Column(
+          children: [
+            RecordButton(
+              isRecording: _isRecording,
+              onPressed: _onBtnPressed,
+            ),
+            const SizedBox(height: 32.0),
+            Text(_isRecording ? "Recording..." : ""),
+          ],
         ),
       ),
       onBackPressed: widget.speakInReverse
@@ -121,6 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.of(context).pop();
             }
           : null,
+      backText: widget.speakInReverse ? "Listen again" : "Record again",
     );
   }
 }

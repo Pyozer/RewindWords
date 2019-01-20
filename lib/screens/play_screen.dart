@@ -140,7 +140,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
             child: !widget.isInReverse
                 ? Center(
                     child: RaisedButton(
-                      child: Text('Speak in reverse'),
+                      color: Colors.black12,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                        side: const BorderSide(color: Colors.white),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12.0,
+                        horizontal: 32.0,
+                      ),
+                      child: Text('SPEAK IN REVERSE'),
                       onPressed: () {
                         _stop();
                         Navigator.of(context).push(MaterialPageRoute(
@@ -157,6 +166,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         _disposePlayer();
         Navigator.of(context).pop();
       },
+      backText: widget.isInReverse ? "Retry" : "Record again",
     );
   }
 }

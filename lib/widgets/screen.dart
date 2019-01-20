@@ -7,34 +7,48 @@ class Screen extends StatelessWidget {
   final String desc;
   final Widget child;
   final VoidCallback onBackPressed;
+  final String backText;
+  final GlobalKey scaffoldKey;
 
   const Screen({
     Key key,
-    this.title,
-    this.desc,
+    @required this.title,
+    @required this.desc,
+    @required this.child,
     this.onBackPressed,
-    this.child,
+    this.backText = "Back",
+    this.scaffoldKey,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.topLeft,
-      children: [
-        DividedView(title: title, desc: desc, child: child),
-        onBackPressed != null
-            ? SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 16.0, left: 16.0),
-                  child: SimpleIconBtn(
-                    icon: Icons.chevron_left,
-                    onPressed: onBackPressed,
-                    size: 50.0,
+    return Scaffold(
+      key: scaffoldKey,
+      body: Stack(
+        alignment: Alignment.topLeft,
+        children: [
+          DividedView(title: title, desc: desc, child: child),
+          onBackPressed != null
+              ? SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16.0, left: 16.0),
+                    child: GestureDetector(
+                      onTap: onBackPressed,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.chevron_left, size: 50.0),
+                          Text(
+                            backText.toUpperCase(),
+                            style: const TextStyle(fontSize: 18.0),
+                          )
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              )
-            : const SizedBox.shrink(),
-      ],
+                )
+              : const SizedBox.shrink(),
+        ],
+      ),
     );
   }
 }
