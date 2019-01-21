@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final filePath = await getRecordFilePath();
         await deleteFile(filePath);
 
-        await AudioRecorder.start(path: filePath);
+        await AudioRecorder.start(path: filePath, bitRate: 128000);
 
         bool isRecording = await AudioRecorder.isRecording;
         setState(() => _isRecording = isRecording);
