@@ -91,11 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final route = MaterialPageRoute(
         builder: (context) => PlayerScreen(isInReverse: widget.speakInReverse),
       );
-
-      if (widget.speakInReverse)
-        Navigator.of(context).pushReplacement(route);
-      else
-        Navigator.of(context).push(route);
+      Navigator.of(context).push(route);
     } catch (e) {
       _scaffoldKey.currentState?.showSnackBar(
         SnackBar(content: Text(e.toString())),
