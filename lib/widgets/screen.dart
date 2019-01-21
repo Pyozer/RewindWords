@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:rewind_words/widgets/divided_view.dart';
-import 'package:rewind_words/widgets/icon_btn.dart';
 
 class Screen extends StatelessWidget {
   final String title;
