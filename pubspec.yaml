@@ -1,6 +1,6 @@
 name: rewind_words
-description: A new Flutter project.
-version: 1.0.0+1
+description: Game app to have fun with reverse words.
+version: 1.0.0
 
 environment:
   sdk: ">=2.0.0-dev.68.0 <3.0.0"
@@ -21,6 +21,14 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: "^0.7.0"
+  
+flutter_icons:
+  ios: true
+  android: true
+  image_path: "assets/images/ic_launcher.png"
+  adaptive_icon_background: "#835BEA"
+  adaptive_icon_foreground: "assets/images/ic_launcher_foreground.png"
 
 flutter:
   uses-material-design: true
