@@ -45,8 +45,3 @@ flutter:
        fonts:
           - asset: assets/fonts/JandaSafeandSound.ttf
             style: normal
-
-     - family: palameciaTitling
-       fonts:
-          - asset: assets/fonts/palameciaTitling.ttf
-            style: normal
