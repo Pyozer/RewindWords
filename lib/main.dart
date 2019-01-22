@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Rewind Words',
+      title: 'RewindWords',
       theme: ThemeData(
         primarySwatch: Colors.purple,
         fontFamily: 'JandaSafeandSound',

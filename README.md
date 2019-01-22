@@ -19,7 +19,7 @@ Actions steps:
 
 ## Libraries
 
-- audio_recorder (https://github.com/mmcc007/audio_recorder)
+- audio_recorder (https://github.com/Pyozer/audio_recorder)
 - audioplayers
 - reverse_audio (https://github.com/Pyozer/reverse_audio)
 - path_provider
