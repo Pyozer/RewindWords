@@ -8,6 +8,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   cupertino_icons: ^0.1.2
   audio_recorder:
@@ -17,6 +19,7 @@ dependencies:
     git: git://github.com/Pyozer/reverse_audio
   path_provider: ^0.4.1
   simple_permissions: ^0.1.9
+  flutter_i18n: ^0.5.2
   
 dev_dependencies:
   flutter_test:
@@ -34,7 +37,8 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/
+    - assets/fonts/
+    - assets/locales/
 
   fonts:
      - family: JandaSafeandSound

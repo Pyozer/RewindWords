@@ -1,0 +1,18 @@
+{
+    "back": "Retour",
+    "play_title": "Mots inversés",
+    "play_desc": "Ecoute ce que tu viens de dire en mode inversé et essaye de le répéter.",
+    "play_reverse_desc": "Voilà ce que tu as dit en inversé, réinversé !",
+    "play_btn_speak": "Parler à l'envers",
+    "retry": "Réessayer",
+    "play_again": "Rejouer",
+    "record_again": "Enregistrer à nouveau",
+    "listen_again": "Ecouter encore",
+    "recording": "Enregistrement...",
+    "home_title": "Rewind Words",
+    "home_reverse_title": "Parles à l'envers",
+    "home_desc": "Dites un mot, vous l'écouterez ensuite à l'envers",
+    "home_reverse_desc": "Dites le mot à l'envers, vous l'écouterez ensuite.",
+    "permission_denied": "Vous devez accepter les autorisations !",
+    "ask_again": "Demander encore"
+}

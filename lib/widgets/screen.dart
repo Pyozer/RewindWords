@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:rewind_words/widgets/divided_view.dart';
 
 class Screen extends StatelessWidget {
@@ -15,7 +16,7 @@ class Screen extends StatelessWidget {
     @required this.desc,
     @required this.child,
     this.onBackPressed,
-    this.backText = "Back",
+    this.backText,
     this.scaffoldKey,
   }) : super(key: key);
 
@@ -37,7 +38,8 @@ class Screen extends StatelessWidget {
                         children: [
                           const Icon(Icons.chevron_left, size: 50.0),
                           Text(
-                            backText.toUpperCase(),
+                            (backText ?? FlutterI18n.translate(context, 'back'))
+                                .toUpperCase(),
                             style: const TextStyle(fontSize: 18.0),
                           )
                         ],

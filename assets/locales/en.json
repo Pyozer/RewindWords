@@ -1,0 +1,18 @@
+{
+    "back": "Back",
+    "play_title": "Words reversed",
+    "play_desc": "Listen to your words in reverse and try to say it.",
+    "play_reverse_desc": "Listen to what you said backwards, inverted.",
+    "play_btn_speak": "Speak in reverse",
+    "retry": "Retry",
+    "play_again": "Play again",
+    "record_again": "Record again",
+    "listen_again": "Listen again",
+    "recording": "Recording...",
+    "home_title": "Rewind Words",
+    "home_reverse_title": "Speak reverse",
+    "home_desc": "Speak a word, you will listen it after in reverse.",
+    "home_reverse_desc": "Speak the word in reverse, you will listen it reverse after.",
+    "permission_denied": "You must accept permissions !",
+    "ask_again": "Ask again"
+}

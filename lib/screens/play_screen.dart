@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:rewind_words/screens/home_screen.dart';
 import 'package:rewind_words/utils/file.dart';
 import 'package:rewind_words/widgets/icon_btn.dart';
@@ -108,11 +109,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
     final progressStyle = Theme.of(context).textTheme.title;
     double value = _currentPos == 0 ? 0 : (_currentPos / _duration);
 
+    final descKey = widget.isInReverse ? 'play_reverse_desc' : 'play_desc';
+    final backTextKey = widget.isInReverse ? 'retry' : 'record_again';
+
     return Screen(
-      title: "Words reversed",
-      desc: !widget.isInReverse
-          ? "Listen to your words in reverse and try to say it."
-          : "Listen to what you said backwards, inverted.",
+      title: FlutterI18n.translate(context, 'play_title'),
+      desc: FlutterI18n.translate(context, descKey),
       child: Column(
         children: [
           Row(
@@ -149,7 +151,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         vertical: 12.0,
                         horizontal: 32.0,
                       ),
-                      child: Text('SPEAK IN REVERSE'),
+                      child: Text(
+                        FlutterI18n.translate(context, 'play_btn_speak'),
+                      ),
                       onPressed: () {
                         _stop();
                         Navigator.of(context).push(MaterialPageRoute(
@@ -166,7 +170,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         _disposePlayer();
         Navigator.of(context).pop();
       },
-      backText: widget.isInReverse ? "Retry" : "Record again",
+      backText: FlutterI18n.translate(context, backTextKey),
     );
   }
 }

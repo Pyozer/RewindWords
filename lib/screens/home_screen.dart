@@ -1,5 +1,6 @@
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:reverse_audio/reverse_audio.dart';
 import 'package:rewind_words/screens/play_screen.dart';
 import 'package:rewind_words/utils/file.dart';
@@ -43,8 +44,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showPermissionAlert() {
     _scaffoldKey.currentState?.showSnackBar(SnackBar(
-      content: Text("You must accept permissions !"),
-      action: SnackBarAction(label: "Ask again", onPressed: _askPermissions),
+      content: Text(FlutterI18n.translate(context, "permission_denied")),
+      action: SnackBarAction(
+        label: FlutterI18n.translate(context, "ask_again"),
+        onPressed: _askPermissions,
+      ),
     ));
   }
 
@@ -101,21 +105,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final titleK = widget.speakInReverse ? 'home_reverse_title' : 'home_title';
+    final descK = widget.speakInReverse ? 'home_reverse_desc' : 'home_desc';
+    final backK = widget.speakInReverse ? 'listen_again' : 'record_again';
+
     return Screen(
       scaffoldKey: _scaffoldKey,
-      title: !widget.speakInReverse ? 'Rewind Words' : 'Speak reverse',
-      desc: !widget.speakInReverse
-          ? 'Speak a word, you will listen it after in reverse.'
-          : 'Speak the word in reverse, you will listen it reverse after.',
+      title: FlutterI18n.translate(context, titleK),
+      desc: FlutterI18n.translate(context, descK),
       child: Center(
         child: Column(
           children: [
-            RecordButton(
-              isRecording: _isRecording,
-              onPressed: _onBtnPressed,
-            ),
+            RecordButton(isRecording: _isRecording, onPressed: _onBtnPressed),
             const SizedBox(height: 32.0),
-            Text(_isRecording ? "Recording..." : ""),
+            Text(
+              _isRecording ? FlutterI18n.translate(context, 'recording') : "",
+            ),
           ],
         ),
       ),
@@ -124,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.of(context).pop();
             }
           : null,
-      backText: widget.speakInReverse ? "Listen again" : "Record again",
+      backText: FlutterI18n.translate(context, backK),
     );
   }
 }
