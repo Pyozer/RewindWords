@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:rewind_words/utils/translation.dart';
 import 'package:rewind_words/widgets/divided_view.dart';
 
 class Screen extends StatelessWidget {
@@ -22,6 +22,8 @@ class Screen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final backTxt = backText ?? getString(context, StringKeys.back);
+
     return Scaffold(
       key: scaffoldKey,
       body: Stack(
@@ -38,8 +40,7 @@ class Screen extends StatelessWidget {
                         children: [
                           const Icon(Icons.chevron_left, size: 50.0),
                           Text(
-                            (backText ?? FlutterI18n.translate(context, 'back'))
-                                .toUpperCase(),
+                            backTxt.toUpperCase(),
                             style: const TextStyle(fontSize: 18.0),
                           )
                         ],

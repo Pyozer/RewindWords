@@ -1,10 +1,10 @@
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:reverse_audio/reverse_audio.dart';
 import 'package:rewind_words/screens/play_screen.dart';
 import 'package:rewind_words/utils/file.dart';
 import 'package:rewind_words/utils/permissions.dart';
+import 'package:rewind_words/utils/translation.dart';
 import 'package:rewind_words/widgets/record_btn.dart';
 import 'package:rewind_words/widgets/screen.dart';
 import 'package:simple_permissions/simple_permissions.dart';
@@ -44,9 +44,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showPermissionAlert() {
     _scaffoldKey.currentState?.showSnackBar(SnackBar(
-      content: Text(FlutterI18n.translate(context, "permission_denied")),
+      content: Text(
+        getString(context, StringKeys.permission_denied),
+      ),
       action: SnackBarAction(
-        label: FlutterI18n.translate(context, "ask_again"),
+        label: getString(context, StringKeys.ask_again),
         onPressed: _askPermissions,
       ),
     ));
@@ -105,21 +107,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final titleK = widget.speakInReverse ? 'home_reverse_title' : 'home_title';
-    final descK = widget.speakInReverse ? 'home_reverse_desc' : 'home_desc';
-    final backK = widget.speakInReverse ? 'listen_again' : 'record_again';
+    final titleK = widget.speakInReverse
+        ? StringKeys.home_reverse_title
+        : StringKeys.home_title;
+    final descK = widget.speakInReverse
+        ? StringKeys.home_reverse_desc
+        : StringKeys.home_desc;
+    final backK = widget.speakInReverse
+        ? StringKeys.listen_again
+        : StringKeys.record_again;
 
     return Screen(
       scaffoldKey: _scaffoldKey,
-      title: FlutterI18n.translate(context, titleK),
-      desc: FlutterI18n.translate(context, descK),
+      title: getString(context, titleK),
+      desc: getString(context, descK),
       child: Center(
         child: Column(
           children: [
             RecordButton(isRecording: _isRecording, onPressed: _onBtnPressed),
             const SizedBox(height: 32.0),
             Text(
-              _isRecording ? FlutterI18n.translate(context, 'recording') : "",
+              _isRecording
+                  ? getString(context, StringKeys.recording)
+                  : "",
             ),
           ],
         ),
@@ -129,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.of(context).pop();
             }
           : null,
-      backText: FlutterI18n.translate(context, backK),
+      backText: getString(context, backK),
     );
   }
 }

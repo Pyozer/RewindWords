@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:rewind_words/screens/home_screen.dart';
 import 'package:rewind_words/utils/file.dart';
+import 'package:rewind_words/utils/translation.dart';
 import 'package:rewind_words/widgets/icon_btn.dart';
 import 'package:rewind_words/widgets/screen.dart';
 
@@ -109,12 +109,15 @@ class _PlayerScreenState extends State<PlayerScreen> {
     final progressStyle = Theme.of(context).textTheme.title;
     double value = _currentPos == 0 ? 0 : (_currentPos / _duration);
 
-    final descKey = widget.isInReverse ? 'play_reverse_desc' : 'play_desc';
-    final backTextKey = widget.isInReverse ? 'retry' : 'record_again';
+    final descKey = widget.isInReverse
+        ? StringKeys.play_reverse_desc
+        : StringKeys.play_desc;
+    final backTextKey =
+        widget.isInReverse ? StringKeys.retry : StringKeys.record_again;
 
     return Screen(
-      title: FlutterI18n.translate(context, 'play_title'),
-      desc: FlutterI18n.translate(context, descKey),
+      title: getString(context, StringKeys.play_title),
+      desc: getString(context, descKey),
       child: Column(
         children: [
           Row(
@@ -152,7 +155,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         horizontal: 32.0,
                       ),
                       child: Text(
-                        FlutterI18n.translate(context, 'play_btn_speak'),
+                        getString(context, StringKeys.play_btn_speak),
                       ),
                       onPressed: () {
                         _stop();
@@ -170,7 +173,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         _disposePlayer();
         Navigator.of(context).pop();
       },
-      backText: FlutterI18n.translate(context, backTextKey),
+      backText: getString(context, backTextKey),
     );
   }
 }
